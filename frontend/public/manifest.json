@@ -1,0 +1,6 @@
+{
+  "short_name": "Agent Memory Store",
+  "name": "Agent Memory Store",
+  "start_url": ".",
+  "display": "standalone"
+}
