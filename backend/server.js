@@ -38,4 +38,9 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/custom-views', require('./routes/customViews'));
 
+// Pass 7 — full backlog non-AI endpoints (audit, provenance, pin, eval, drift, cost, replay, jobs, ACL, api-keys, exports).
+// Mounted under /api/pass7 to avoid colliding with existing routes (memoryExtras still owns GET /api/memories?as_of=...).
+app.use('/api/pass7', require('./routes/pass7'));
+app.use('/api/memory-conflicts', require('./routes/memoryConflictResolver'));
+
 app.listen(PORT, () => console.log(`\nAgent Memory Store API on http://localhost:${PORT}\n`));

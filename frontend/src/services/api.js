@@ -85,3 +85,81 @@ export const webhooksApi = {
   test: (event, payload) => request('/webhooks/test', { method: 'POST', body: JSON.stringify({ event, payload }) }),
   deliveries: (id) => request(`/webhooks/${id}/deliveries`),
 };
+
+// ─── Pass 7 — new AI features ────────────────────────────────────────────────
+export const aiConflictResolve         = (body) => request('/ai/conflict-resolve',          { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRelevanceScore          = (body) => request('/ai/relevance-score',           { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiImportanceScore         = (body) => request('/ai/importance-score',          { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiMemoryConsolidate       = (body) => request('/ai/memory-consolidate',        { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRagChat                 = (body) => request('/ai/rag-chat',                  { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiPiiRedact               = (body) => request('/ai/pii-redact',                { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiMemoryGraphExtract      = (body) => request('/ai/memory-graph-extract',      { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiDecayPolicyRecommend    = (body) => request('/ai/decay-policy-recommend',    { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiSemanticSearch          = (body) => request('/ai/semantic-search',           { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiCrossAgentShareAdvisor  = (body) => request('/ai/cross-agent-share-advisor', { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRetentionDryRun         = (body) => request('/ai/retention-dry-run',         { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAutoMergeAdvisor        = (body) => request('/ai/auto-merge-advisor',        { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiEmbedGenerate           = (body) => request('/ai/embed-generate',            { method: 'POST', body: JSON.stringify(body || {}) });
+export const memoryConflictResolve     = (body) => request('/memory-conflicts/resolve',     { method: 'POST', body: JSON.stringify(body || {}) });
+
+// ─── Pass 7 — non-AI ops (pass7 router) ──────────────────────────────────────
+export const pass7 = {
+  // audit
+  listMemoryReads: (memoryId) => request(`/pass7/memory-reads${memoryId ? `?memory_id=${memoryId}` : ''}`),
+  logMemoryRead:   (body)     => request('/pass7/memory-reads', { method: 'POST', body: JSON.stringify(body || {}) }),
+  memoryReadsSummary: ()      => request('/pass7/memory-reads/summary'),
+  // provenance
+  getProvenance:   (id)       => request(`/pass7/memories/${id}/provenance`),
+  setProvenance:   (id, body) => request(`/pass7/memories/${id}/provenance`, { method: 'PUT', body: JSON.stringify(body || {}) }),
+  // pin
+  pin:             (id)       => request(`/pass7/memories/${id}/pin`,   { method: 'POST' }),
+  unpin:           (id)       => request(`/pass7/memories/${id}/unpin`, { method: 'POST' }),
+  listPinned:      ()         => request('/pass7/memories/pinned/list'),
+  // importance + decay + namespace
+  setImportance:   (id, score)    => request(`/pass7/memories/${id}/importance`, { method: 'PUT', body: JSON.stringify({ importance: score }) }),
+  setDecayAt:      (id, ts)       => request(`/pass7/memories/${id}/decay-at`,   { method: 'PUT', body: JSON.stringify({ decay_at: ts }) }),
+  setNamespace:    (id, ns)       => request(`/pass7/memories/${id}/namespace`,  { method: 'PUT', body: JSON.stringify({ namespace: ns }) }),
+  byNamespace:     (ns)           => request(`/pass7/memories-by-namespace?namespace=${encodeURIComponent(ns)}`),
+  // retention
+  retentionDryRun: (params={})    => request(`/pass7/retention/dry-run?days=${params.days||30}${params.namespace?`&namespace=${encodeURIComponent(params.namespace)}`:''}`),
+  tombstone:       (ids, reason)  => request('/pass7/retention/tombstone', { method: 'POST', body: JSON.stringify({ memory_ids: ids, reason }) }),
+  restore:         (ids)          => request('/pass7/retention/restore',   { method: 'POST', body: JSON.stringify({ memory_ids: ids }) }),
+  // relations
+  listRelations:   (subject)      => request(`/pass7/relations${subject?`?subject=${encodeURIComponent(subject)}`:''}`),
+  createRelation:  (body)         => request('/pass7/relations', { method: 'POST', body: JSON.stringify(body || {}) }),
+  deleteRelation:  (id)           => request(`/pass7/relations/${id}`, { method: 'DELETE' }),
+  relationsGraph:  (limit=80)     => request(`/pass7/relations/graph?limit=${limit}`),
+  // api-keys
+  listApiKeys:     ()             => request('/pass7/api-keys'),
+  issueApiKey:     (body)         => request('/pass7/api-keys', { method: 'POST', body: JSON.stringify(body || {}) }),
+  revokeApiKey:    (id)           => request(`/pass7/api-keys/${id}/revoke`, { method: 'POST' }),
+  // acl
+  listAcl:         ()             => request('/pass7/acl'),
+  createAcl:       (body)         => request('/pass7/acl', { method: 'POST', body: JSON.stringify(body || {}) }),
+  deleteAcl:       (id)           => request(`/pass7/acl/${id}`, { method: 'DELETE' }),
+  // rate limits
+  listRateLimits:  ()             => request('/pass7/rate-limits'),
+  probeRateLimit:  (bucket)       => request('/pass7/rate-limits/probe', { method: 'POST', body: JSON.stringify({ bucket }) }),
+  // eval
+  listEvalPairs:   ()             => request('/pass7/eval-pairs'),
+  createEvalPair:  (body)         => request('/pass7/eval-pairs', { method: 'POST', body: JSON.stringify(body || {}) }),
+  updateEvalPair:  (id, body)     => request(`/pass7/eval-pairs/${id}`, { method: 'PUT', body: JSON.stringify(body || {}) }),
+  deleteEvalPair:  (id)           => request(`/pass7/eval-pairs/${id}`, { method: 'DELETE' }),
+  runEvalPairs:    (label)        => request('/pass7/eval-pairs/run', { method: 'POST', body: JSON.stringify({ label }) }),
+  listEvalRuns:    ()             => request('/pass7/eval-runs'),
+  getEvalRun:      (id)           => request(`/pass7/eval-runs/${id}`),
+  // drift
+  listDrift:       ()             => request('/pass7/drift'),
+  sampleDrift:     ()             => request('/pass7/drift/sample', { method: 'POST' }),
+  // cost
+  cost:            ()             => request('/pass7/cost'),
+  // replay
+  replay:          (subject)      => request(`/pass7/replay/${encodeURIComponent(subject)}`),
+  // jobs
+  listJobs:        ()             => request('/pass7/jobs'),
+  createJob:       (body)         => request('/pass7/jobs', { method: 'POST', body: JSON.stringify(body || {}) }),
+  runJob:          (id)           => request(`/pass7/jobs/${id}/run`, { method: 'POST' }),
+  // consolidation / share preview
+  consolidationPreview: (body)    => request('/pass7/consolidation/preview', { method: 'POST', body: JSON.stringify(body || {}) }),
+  crossAgentSharePreview: (body)  => request('/pass7/cross-agent-share/preview', { method: 'POST', body: JSON.stringify(body || {}) }),
+};
