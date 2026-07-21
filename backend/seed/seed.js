@@ -2,17 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const pool = require('../config/database');
 
+if (process.env.ENABLE_DEMO_SEED !== 'true') {
+  throw new Error('Demo seed blocked. Run migrations separately and set ENABLE_DEMO_SEED=true explicitly.');
+}
+
 async function main() {
-  const migDir = path.join(__dirname, '..', 'migrations');
-  for (const f of fs.readdirSync(migDir).filter((x) => x.endsWith('.sql')).sort()) {
-    const sql = fs.readFileSync(path.join(migDir, f), 'utf8');
-    try { await pool.query(sql); console.log(`[seed] applied ${f}`); }
-    catch (e) { console.warn(`[seed] ${f} warn: ${e.message}`); }
-  }
-  await pool.query(
-    "INSERT INTO users (email, password, name, role) VALUES ('admin@agent-memory-store.local','secure123','Admin','commander') ON CONFLICT (email) DO NOTHING"
-  );
-  console.log('[seed] demo user ready');
+  console.log('[seed] inserting opt-in demo domain rows; migrations and users are managed separately');
 
   // memories
   for (const row of [{"subject":"Project Apollo","event_text":"Budget overrun discussed with CFO.","tags":"decision,risk","status":"active","embedded_at":null},{"subject":"Customer #4421","event_text":"Requested 5% renewal discount.","tags":"sales,renewal","status":"active","embedded_at":null},{"subject":"Project Apollo","event_text":"Q3 milestone pushed by 2 weeks.","tags":"schedule","status":"active","embedded_at":null}]) {
