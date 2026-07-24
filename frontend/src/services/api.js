@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:4059/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 const TOKEN_KEY = 'agent_memory_store_token';
 const USER_KEY = 'agent_memory_store_user';
 

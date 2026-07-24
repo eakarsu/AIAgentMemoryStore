@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 const TOKEN_KEY = Object.keys(localStorage).find((k) => k.endsWith('_token')) || 'agent_memory_store_token';
-const API_BASE = 'http://localhost:4059/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 export default function SubjectBrowserWorkbench(){
   const [subjects,setSubjects]=useState([]);const [pick,setPick]=useState(null);const [mems,setMems]=useState([]);
   useEffect(()=>{fetch(API_BASE+'/subjects',{headers:{Authorization:'Bearer '+localStorage.getItem(TOKEN_KEY)}}).then(r=>r.json()).then(setSubjects);},[]);

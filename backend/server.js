@@ -20,6 +20,7 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'AIAgentMemoryStore', timestamp: new Date().toISOString() }));
 
+app.use('/api', require('./runtimeAcceptance'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', authenticateToken);
 app.use('/api/memory-workflow', require('./routes/tenantMemoryWorkflow'));

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 const TOKEN_KEY = Object.keys(localStorage).find((k) => k.endsWith('_token')) || 'agent_memory_store_token';
-const API_BASE = 'http://localhost:4059/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 export default function TimeSliderWorkbench(){
   const today=new Date();
   const start=new Date(today.getTime()-90*86400000);
