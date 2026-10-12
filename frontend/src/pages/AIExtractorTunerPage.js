@@ -12,7 +12,7 @@ export default function AIExtractorTunerPage() {
         { key: 'extractor_name', label: 'Extractor', type: 'text', placeholder: '' },
         { key: 'failing_examples', label: 'Failing Examples', type: 'textarea', placeholder: '' }
       ]}
-      run={(v) => aiExtractorTuner(v)}
+      run={(v, requestOptions) => aiExtractorTuner(v, requestOptions)}
     />
   );
 }

@@ -10,9 +10,9 @@ export default function AITimeTravelPage() {
       subtitle="Time-Travel Query"
       inputs={[
         { key: 'subject', label: 'Entity', type: 'text', placeholder: '' },
-        { key: 'as_of', label: 'As Of (date)', type: 'text', placeholder: '' }
+        { key: 'as_of', label: 'As Of (date)', type: 'date', placeholder: '' }
       ]}
-      run={(v) => aiTimeTravel(v)}
+      run={(v, requestOptions) => aiTimeTravel(v, requestOptions)}
     />
   );
 }

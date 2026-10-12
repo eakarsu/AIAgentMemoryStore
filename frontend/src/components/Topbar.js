@@ -1,5 +1,4 @@
 import React from 'react';
-import NotificationBell from './NotificationBell';
 import { getStoredUser } from '../services/api';
 
 export default function Topbar() {
@@ -20,7 +19,7 @@ export default function Topbar() {
         Logged in as <strong style={{ color: '#f1f5f9' }}>{user?.name || user?.email || 'user'}</strong>
         <span style={{ marginLeft: 8, color: '#94a3b8' }}>· role: {user?.role || 'viewer'}</span>
       </div>
-      <NotificationBell />
+      <span style={{color:'#94a3b8'}}>Native tenant workspace</span>
     </div>
   );
 }

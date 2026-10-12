@@ -13,7 +13,7 @@ export default function AICrossAgentShareAdvisorPage() {
         { key: 'target_agent', label: 'Target agent', type: 'text' },
         { key: 'subject', label: 'Subject (optional)', type: 'text' },
       ]}
-      run={(v) => aiCrossAgentShareAdvisor(v)}
+      run={(v, requestOptions) => aiCrossAgentShareAdvisor(v, requestOptions)}
     />
   );
 }

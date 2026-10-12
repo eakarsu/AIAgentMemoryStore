@@ -12,7 +12,7 @@ export default function AIRetentionDryRunPage() {
         { key: 'namespace', label: 'Namespace', type: 'text' },
         { key: 'policy_days', label: 'Policy days', type: 'number', defaultValue: 30 },
       ]}
-      run={(v) => aiRetentionDryRun(v)}
+      run={(v, requestOptions) => aiRetentionDryRun(v, requestOptions)}
     />
   );
 }

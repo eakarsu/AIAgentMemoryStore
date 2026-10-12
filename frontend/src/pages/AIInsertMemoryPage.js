@@ -13,7 +13,7 @@ export default function AIInsertMemoryPage() {
         { key: 'event_text', label: 'Event', type: 'textarea', placeholder: '' },
         { key: 'tags', label: 'Tags', type: 'text', placeholder: '' }
       ]}
-      run={(v) => aiInsertMemory(v)}
+      run={(v, requestOptions) => aiInsertMemory(v, requestOptions)}
     />
   );
 }

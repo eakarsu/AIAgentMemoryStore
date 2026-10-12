@@ -1,91 +1,10 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login, setToken, setStoredUser } from '../services/api';
-
-function __demoAutofill() {
-  (async () => {
-    let email = "";
-    let password = "";
-    try {
-      const response = await fetch("/api/auth/demo-credentials", { cache: "no-store" });
-      if (response.ok) {
-        const data = await response.json();
-        email = data.email || data.username || "";
-        password = data.password || "";
-      }
-    } catch (error) {
-      /* fall back to build-time credentials below */
-    }
-    if (!email || !password) {
-      const env = (typeof process !== "undefined" && process.env) ? process.env : {};
-      email = email || env.REACT_APP_DEMO_EMAIL || env.VITE_DEMO_EMAIL || "";
-      password = password || env.REACT_APP_DEMO_PASSWORD || env.VITE_DEMO_PASSWORD || "";
-    }
-    const form = document.querySelector("form");
-    const setValue = (element, value) => {
-      if (!element) return;
-      const prototype = element.tagName === "TEXTAREA" ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
-      const setter = Object.getOwnPropertyDescriptor(prototype, "value").set;
-      setter.call(element, value);
-      element.dispatchEvent(new Event("input", { bubbles: true }));
-    };
-    const scope = form || document;
-    setValue(scope.querySelector('input[type="email"], input[name="email"], input[name="username"]') || scope.querySelectorAll("input")[0], email);
-    setValue(scope.querySelector('input[type="password"], input[name="password"]') || scope.querySelectorAll("input")[1], password);
-    window.setTimeout(() => {
-      if (form && typeof form.requestSubmit === "function") {
-        form.requestSubmit();
-      } else {
-        const submit = scope.querySelector('button[type="submit"], input[type="submit"]');
-        if (submit) submit.click();
-      }
-    }, 50);
-  })();
-}
-
-export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const navigate = useNavigate();
-  const submit = async (e) => {
-    e.preventDefault();
-    setBusy(true); setError(null);
-    try {
-      const { token, user } = await login(email, password);
-      setToken(token); setStoredUser(user);
-      navigate('/');
-    } catch (err) { setError(err.message); }
-    finally { setBusy(false); }
-  };
-  return (
-    <div className="login-shell">
-      <form className="login-card" onSubmit={submit}>
-        <h2 className="login-brand">AGENT MEMORY STORE</h2>
-        <p className="login-sub">LLM-native memory: schema-on-read, time-travel, one-line recall.</p>
-        <div className="form-group">
-          <label>Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        {error && <div className="ai-error">{error}</div>}
-        <button
-          type="button"
-          onClick={__demoAutofill}
-          aria-label="Auto Fill Demo Credentials"
-          style={{ width: '100%', marginBottom: '12px', padding: '10px 14px', borderRadius: '8px', border: '1px solid currentColor', background: 'transparent', cursor: 'pointer' }}
-        >
-          Auto Fill Demo Credentials
-        </button>
-        <button className="btn" type="submit" disabled={busy} style={{ width: '100%', marginTop: 10 }}>
-          {busy ? 'Signing in...' : 'Sign In'}
-        </button>
-        <p className="login-hint">Use an account provisioned by an administrator.</p>
-      </form>
-    </div>
-  );
-}
+const demoPair=()=>{if(!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO_CREDENTIAL_AUTOFILL==='true'))throw Error('Development demo credentials are disabled.');const email=import.meta.env.VITE_DEMO_EMAIL,password=import.meta.env.VITE_DEMO_PASSWORD;if(!email||!password)throw Error('The configured development account is unavailable.');return{email,password};};
+function validateIdentity(result,email){if(typeof result?.token!=='string'||!result.token||!result.user||!Number.isSafeInteger(Number(result.user.id))||result.user.email?.toLowerCase()!==email.trim().toLowerCase())throw Error('Native sign-in returned an invalid account. No session was saved.');let claims;try{claims=JSON.parse(atob(result.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(_){throw Error('The sign-in token was malformed. No session was saved.');}if(Number(claims.id)!==Number(result.user.id)||claims.email!==result.user.email||claims.role!==result.user.role||(claims.tenantId??claims.tenant_id??null)!==(result.user.tenantId??result.user.tenant_id??null))throw Error('The sign-in token does not match the returned account.');}
+export default function LoginPage(){
+const navigate=useNavigate();const lock=useRef(false);const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[error,setError]=useState('');const[busy,setBusy]=useState(false);
+async function signIn(pair){if(lock.current)return;lock.current=true;setBusy(true);setError('');try{const result=await login(pair.email,pair.password);validateIdentity(result,pair.email);setToken(result.token);setStoredUser(result.user);navigate('/');}catch(error){setError(error.response?.data?.error||error.message||'Sign-in failed. Retry.');}finally{lock.current=false;setBusy(false);}}
+function fillCredentials(){try{const pair=demoPair();setEmail(pair.email);setPassword(pair.password);setError('');return pair;}catch(error){setError(error.message);return null;}}
+return <div className="login-container login-shell"><div className="login-card"><h1>Agent Memory Store</h1><p>Use the existing configured account to open your native workspace.</p><div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:16}}><button className="btn btn-primary" type="button" disabled={busy} onClick={()=>{const pair=fillCredentials();if(pair)signIn(pair);}}>Log In as Demo</button><button className="btn secondary" type="button" disabled={busy} onClick={fillCredentials}>Fill credentials</button></div>{error&&<p role="alert" className="ai-error alert alert-error">{error}</p>}<form onSubmit={event=>{event.preventDefault();signIn({email,password});}}><div className="form-group"><label htmlFor="login-email">Email</label><input className="form-input" id="login-email" type="email" value={email} onChange={event=>setEmail(event.target.value)} required autoComplete="username"/></div><div className="form-group"><label htmlFor="login-password">Password</label><input className="form-input" id="login-password" type="password" value={password} onChange={event=>setPassword(event.target.value)} required autoComplete="current-password"/></div><button type="submit" className="btn btn-primary" disabled={busy}>{busy?'Signing in…':'Sign In'}</button></form><p>Demo login does not create, reset or promote an account.</p></div></div>;}

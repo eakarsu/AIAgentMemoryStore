@@ -65,16 +65,9 @@ export default function Sidebar() {
         <p>LLM-native memory: schema-on-read, time-travel, one-line recall.</p>
       </div>
       <NavLink to="/" end>Dashboard</NavLink>
-      <div className="sidebar-group-label">Data</div>
-      {CRUD_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
-      <div className="sidebar-group-label">AI Features</div>
-      {AI_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
-      {CUSTOM_LINKS.length > 0 && <div className="sidebar-group-label">Workbenches</div>}
-      {CUSTOM_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
-      <div className="sidebar-group-label">Memory Views</div>
-      {MEMORY_VIEW_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
-      <div className="sidebar-group-label">Operations</div>
-      {OPS_LINKS.map((l) => <NavLink key={l.to} to={l.to}>{l.label}</NavLink>)}
+      <NavLink to="/ai/memory-governance-review">AI · Memory governance review</NavLink>
+      <NavLink to="/memories">Native tenant memories</NavLink>
+      <details><summary className="sidebar-group-label">Archived prototypes · unavailable</summary><p>The legacy global namespace remains disabled. Use native tenant memories or governance review above.</p>{[...CRUD_LINKS.filter(link=>link.to!=='/memories'),...AI_LINKS,...CUSTOM_LINKS,...MEMORY_VIEW_LINKS,...OPS_LINKS].map(link=><NavLink key={link.to} to={link.to}>{link.label} · archived</NavLink>)}</details>
       <div className="sidebar-user">
         {user && (
           <div className="sidebar-user-info">

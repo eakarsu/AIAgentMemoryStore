@@ -12,7 +12,7 @@ export default function AIContradictionDetectPage() {
         { key: 'subject', label: 'Subject', type: 'text', placeholder: '' },
         { key: 'recent_window', label: 'Window', type: 'text', placeholder: '' }
       ]}
-      run={(v) => aiContradictionDetect(v)}
+      run={(v, requestOptions) => aiContradictionDetect(v, requestOptions)}
     />
   );
 }

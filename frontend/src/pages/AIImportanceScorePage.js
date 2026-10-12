@@ -13,7 +13,7 @@ export default function AIImportanceScorePage() {
         { key: 'event_text', label: 'Event', type: 'textarea' },
         { key: 'tags', label: 'Tags', type: 'text' },
       ]}
-      run={(v) => aiImportanceScore(v)}
+      run={(v, requestOptions) => aiImportanceScore(v, requestOptions)}
     />
   );
 }

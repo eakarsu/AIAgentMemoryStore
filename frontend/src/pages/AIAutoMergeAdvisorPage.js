@@ -10,9 +10,9 @@ export default function AIAutoMergeAdvisorPage() {
       subtitle="Propose merge groups for contradictory memories with truth-drift risk notes. No merges are issued — human review required."
       inputs={[
         { key: 'subject', label: 'Subject', type: 'text' },
-        { key: 'candidate_ids', label: 'Candidate IDs (comma-separated)', type: 'text' },
+        { key: 'candidate_ids', requiresExistingRecord: true, label: 'Candidate IDs (comma-separated)', type: 'text' },
       ]}
-      run={(v) => aiAutoMergeAdvisor(v)}
+      run={(v, requestOptions) => aiAutoMergeAdvisor(v, requestOptions)}
     />
   );
 }

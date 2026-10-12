@@ -12,7 +12,7 @@ export default function AISemanticSearchPage() {
         { key: 'query', label: 'Query', type: 'textarea' },
         { key: 'top_k', label: 'Top K', type: 'number', defaultValue: 5 },
       ]}
-      run={(v) => aiSemanticSearch(v)}
+      run={(v, requestOptions) => aiSemanticSearch(v, requestOptions)}
     />
   );
 }

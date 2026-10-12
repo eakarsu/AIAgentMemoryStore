@@ -12,7 +12,7 @@ export default function AIDecayPolicyRecommendPage() {
         { key: 'namespace', label: 'Namespace', type: 'text' },
         { key: 'access_pattern', label: 'Access pattern (free-form)', type: 'textarea' },
       ]}
-      run={(v) => aiDecayPolicyRecommend(v)}
+      run={(v, requestOptions) => aiDecayPolicyRecommend(v, requestOptions)}
     />
   );
 }

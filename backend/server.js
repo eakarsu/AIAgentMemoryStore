@@ -23,27 +23,20 @@ app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'AIAgentM
 app.use('/api', require('./runtimeAcceptance'));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api', authenticateToken);
+app.use('/api/memory-workflow', require('./routes/nativeMemoryRecords')(require('./config/database')));
 app.use('/api/memory-workflow', require('./routes/tenantMemoryWorkflow'));
 app.use('/api', (req, res, next) => {
-  if (process.env.ENABLE_LEGACY_GLOBAL_ROUTES === 'true' || req.path.startsWith('/memory-workflow')) return next();
+  // Only the authenticated tenant workflow is supported here. Obsolete local
+  // legacy flags never expose global memory rows or bypass tenant isolation.
+  if (req.path === '/memory-workflow' || req.path.startsWith('/memory-workflow/')) return next();
   return res.status(503).json({
     error: 'Legacy global routes are disabled because they are not tenant-isolated',
     supported_workflow: '/api/memory-workflow',
-    development_override: 'ENABLE_LEGACY_GLOBAL_ROUTES=true',
+    code: 'legacy_global_route_quarantined',
   });
 });
 
-// memoryExtras MUST mount BEFORE the /api/memories CRUD so as_of=... wins
-if (process.env.ENABLE_LEGACY_GLOBAL_ROUTES === 'true') app.use('/api', require('./routes/memoryExtras'));
-
-// CRUD entities
-if (process.env.ENABLE_LEGACY_GLOBAL_ROUTES === 'true') {
-  app.use('/api/memories', require('./routes/Memories'));
-  app.use('/api/subjects', require('./routes/Subjects'));
-  app.use('/api/projections', require('./routes/Projections'));
-  app.use('/api/extractors', require('./routes/Extractors'));
-  app.use('/api/retention-policies', require('./routes/RetentionPolicies'));
-}
+// Global memoryExtras and original global CRUD remain archived and unmounted.
 
 // AI + cross-cutting
 app.use('/api/ai', require('./routes/ai'));
@@ -53,11 +46,6 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/custom-views', require('./routes/customViews'));
 
-// Pass 7 — full backlog non-AI endpoints (audit, provenance, pin, eval, drift, cost, replay, jobs, ACL, api-keys, exports).
-// Mounted under /api/pass7 to avoid colliding with existing routes (memoryExtras still owns GET /api/memories?as_of=...).
-if (process.env.ENABLE_LEGACY_GLOBAL_ROUTES === 'true') {
-  app.use('/api/pass7', require('./routes/pass7'));
-  app.use('/api/memory-conflicts', require('./routes/memoryConflictResolver'));
-}
+// Original global pass7/conflict routes remain archived and unmounted.
 
 app.listen(PORT, () => console.log(`\nAgent Memory Store API on http://localhost:${PORT}\n`));

@@ -31,7 +31,7 @@ export default defineConfig({
     port: frontendPort,
     strictPort: true,
     proxy: {
-      '/api': `http://127.0.0.1:${backendPort}`,
+      '/api': {target:`http://127.0.0.1:${backendPort}`,configure(proxy){proxy.on('proxyReq',(upstream,req,res)=>{const interrupt=()=>{if(!res.writableEnded)upstream.destroy();};req.once('aborted',interrupt);res.once('close',interrupt);upstream.once('close',()=>{req.removeListener('aborted',interrupt);res.removeListener('close',interrupt);});});}},
     },
   },
   build: {

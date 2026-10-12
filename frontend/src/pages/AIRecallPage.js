@@ -11,7 +11,7 @@ export default function AIRecallPage() {
       inputs={[
         { key: 'query', label: 'Query', type: 'textarea', placeholder: '' }
       ]}
-      run={(v) => aiRecall(v)}
+      run={(v, requestOptions) => aiRecall(v, requestOptions)}
     />
   );
 }

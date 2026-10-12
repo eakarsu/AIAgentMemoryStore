@@ -1,0 +1,10 @@
+"use strict";
+const jwt=require('jsonwebtoken');const {getJwtSecret}=require('./security');
+const fail=(status,message)=>Object.assign(new Error(message),{status});
+async function writeMemoryTransaction({req,res,pool,work,timeoutMs=15000}){const controller=new AbortController();let client,committed=false,ending,timedOut=false;
+ const active=()=>{if(timedOut)throw fail(504,'The native memory write timed out. Retry.');if(controller.signal.aborted||req.aborted||res.destroyed)throw fail(499,'Request cancelled');};
+ const disconnect=()=>{if(!res.writableEnded)controller.abort();};const interrupt=()=>{if(client&&!committed&&!ending)ending=client.end().catch(()=>{});};const timer=setTimeout(()=>{timedOut=true;controller.abort();},timeoutMs);req.on('aborted',disconnect);res.on('close',disconnect);controller.signal.addEventListener('abort',interrupt);
+ async function fresh(){active();let claims;try{claims=jwt.verify(String(req.headers.authorization||'').replace(/^Bearer\s+/i,''),getJwtSecret(),{algorithms:['HS256']});}catch(_){throw fail(401,'Invalid or expired native session');}const actor=(await client.query('SELECT id,email,role,tenant_id FROM users WHERE id=$1 FOR SHARE',[claims.id])).rows[0];if(!actor||actor.email!==claims.email||actor.role!==claims.role||actor.tenant_id!==claims.tenant_id||actor.tenant_id!==req.tenantId)throw fail(401,'Your account identity has changed. Sign in again.');active();return actor;}
+ try{active();client=await pool.connect();if(controller.signal.aborted)interrupt();active();await client.query('BEGIN');await fresh();const result=await work(client,active);active();await fresh();active();await client.query('COMMIT');committed=true;return result;}catch(error){if(client&&!committed&&!ending)await client.query('ROLLBACK').catch(()=>{});active();throw error;}finally{clearTimeout(timer);req.removeListener('aborted',disconnect);res.removeListener('close',disconnect);controller.signal.removeEventListener('abort',interrupt);if(ending)await ending;if(client)client.release(Boolean(ending));}
+}
+module.exports={writeMemoryTransaction,fail};

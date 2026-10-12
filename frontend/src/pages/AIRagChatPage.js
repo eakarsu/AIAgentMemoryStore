@@ -12,7 +12,7 @@ export default function AIRagChatPage() {
         { key: 'query', label: 'Query', type: 'textarea' },
         { key: 'top_k', label: 'Top K', type: 'number', defaultValue: 5 },
       ]}
-      run={(v) => aiRagChat(v)}
+      run={(v, requestOptions) => aiRagChat(v, requestOptions)}
     />
   );
 }

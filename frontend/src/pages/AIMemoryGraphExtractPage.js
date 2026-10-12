@@ -11,7 +11,7 @@ export default function AIMemoryGraphExtractPage() {
       inputs={[
         { key: 'event_text', label: 'Event text', type: 'textarea' },
       ]}
-      run={(v) => aiMemoryGraphExtract(v)}
+      run={(v, requestOptions) => aiMemoryGraphExtract(v, requestOptions)}
     />
   );
 }

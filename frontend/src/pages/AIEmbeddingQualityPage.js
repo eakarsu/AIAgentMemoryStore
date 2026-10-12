@@ -12,7 +12,7 @@ export default function AIEmbeddingQualityPage() {
         { key: 'sample_texts', label: 'Sample Texts', type: 'textarea', placeholder: '' },
         { key: 'expected_groups_hint', label: 'Groups Hint', type: 'text', placeholder: '' }
       ]}
-      run={(v) => aiEmbeddingQuality(v)}
+      run={(v, requestOptions) => aiEmbeddingQuality(v, requestOptions)}
     />
   );
 }

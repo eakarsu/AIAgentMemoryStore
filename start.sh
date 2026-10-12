@@ -84,7 +84,7 @@ export RUNTIME_AI_ENDPOINT="/api/ai/memory-governance-review"
 export RUNTIME_AI_FEATURE="agent-memory-governance-review"
 export RUNTIME_AI_SYSTEM_PROMPT="Review agent-memory operations for tenant isolation, provenance, prompt-injection risk, retention, and safe retrieval behavior."
 fail(){ echo "ERROR: $*" >&2; exit 1; }
-port_free(){ ! lsof -ti ":$1" >/dev/null 2>&1; }
+port_free(){ ! lsof -nP -tiTCP:"$1" -sTCP:LISTEN >/dev/null 2>&1; }
 echo "Agent Memory Store"
 echo "Read-only startup preflight; migrations, admin provisioning and demo data are separate commands."
 command -v node >/dev/null 2>&1||fail "Node.js is required."

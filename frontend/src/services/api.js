@@ -16,8 +16,8 @@ async function request(url, options = {}) {
   const token = getToken();
   const headers = { 'Content-Type': 'application/json', ...(options.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) };
   const res = await fetch(`${API_BASE}${url}`, { ...options, headers });
-  if (res.status === 401 && !url.startsWith('/auth/login')) { logout(); throw new Error('Session expired'); }
-  const data = await res.json().catch(() => ({}));
+  if (res.status === 401 && !['/auth/login','/auth/native-login'].includes(url)) { logout(); throw new Error('Session expired'); }
+  const data = await res.json().catch(() => {throw new Error('The native API returned an unreadable response. Retry.');});
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
   return data;
 }
@@ -44,8 +44,10 @@ function crud(base) {
   };
 }
 
-export const login = (email, password) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-export const getMe = () => request('/auth/me');
+export const login = async(email,password)=>{const result=await request('/auth/native-login',{method:'POST',body:JSON.stringify({email,password})});if(typeof result.token!=='string'||!result.token||!result.user||!Number.isSafeInteger(Number(result.user.id))||result.user.email?.toLowerCase()!==email.trim().toLowerCase())throw Error('Native sign-in returned an invalid identity. No session was saved.');let claims;try{claims=JSON.parse(atob(result.token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));}catch(_){throw Error('Native sign-in token was malformed. No session was saved.');}if(Number(claims.id)!==Number(result.user.id)||claims.email!==result.user.email||claims.role!==result.user.role||claims.tenant_id!==result.user.tenant_id)throw Error('Native sign-in token did not match the returned account. No session was saved.');return result;};
+export const getMe = () => request('/auth/native-me');
+export const memoryGovernanceReview = (body, options = {}) => request('/ai/memory-governance-review', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const getMemoryGovernanceHistory = (options = {}) => request('/ai/history', options);
 
 export const memoriesApi = crud('memories');
 export const subjectsApi = crud('subjects');
@@ -53,13 +55,13 @@ export const projectionsApi = crud('projections');
 export const extractorsApi = crud('extractors');
 export const retention_policiesApi = crud('retention-policies');
 
-export const aiInsertMemory = (body) => request('/ai/insert-memory', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiRecall = (body) => request('/ai/recall', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiTimeTravel = (body) => request('/ai/time-travel', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiContradictionDetect = (body) => request('/ai/contradiction-detect', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiSummaryRollup = (body) => request('/ai/summary-rollup', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiExtractorTuner = (body) => request('/ai/extractor-tuner', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiEmbeddingQuality = (body) => request('/ai/embedding-quality', { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiInsertMemory = (body, options = {}) => request('/ai/insert-memory', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRecall = (body, options = {}) => request('/ai/recall', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiTimeTravel = (body, options = {}) => request('/ai/time-travel', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiContradictionDetect = (body, options = {}) => request('/ai/contradiction-detect', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiSummaryRollup = (body, options = {}) => request('/ai/summary-rollup', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiExtractorTuner = (body, options = {}) => request('/ai/extractor-tuner', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiEmbeddingQuality = (body, options = {}) => request('/ai/embedding-quality', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
 
 export const getAIHistory = (feature, limit = 25) => {
   const qs = new URLSearchParams({ ...(feature ? { feature } : {}), limit: String(limit) }).toString();
@@ -87,19 +89,19 @@ export const webhooksApi = {
 };
 
 // ─── Pass 7 — new AI features ────────────────────────────────────────────────
-export const aiConflictResolve         = (body) => request('/ai/conflict-resolve',          { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiRelevanceScore          = (body) => request('/ai/relevance-score',           { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiImportanceScore         = (body) => request('/ai/importance-score',          { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiMemoryConsolidate       = (body) => request('/ai/memory-consolidate',        { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiRagChat                 = (body) => request('/ai/rag-chat',                  { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiPiiRedact               = (body) => request('/ai/pii-redact',                { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiMemoryGraphExtract      = (body) => request('/ai/memory-graph-extract',      { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiDecayPolicyRecommend    = (body) => request('/ai/decay-policy-recommend',    { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiSemanticSearch          = (body) => request('/ai/semantic-search',           { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiCrossAgentShareAdvisor  = (body) => request('/ai/cross-agent-share-advisor', { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiRetentionDryRun         = (body) => request('/ai/retention-dry-run',         { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiAutoMergeAdvisor        = (body) => request('/ai/auto-merge-advisor',        { method: 'POST', body: JSON.stringify(body || {}) });
-export const aiEmbedGenerate           = (body) => request('/ai/embed-generate',            { method: 'POST', body: JSON.stringify(body || {}) });
+export const aiConflictResolve         = (body, options = {}) => request('/ai/conflict-resolve',          { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRelevanceScore          = (body, options = {}) => request('/ai/relevance-score',           { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiImportanceScore         = (body, options = {}) => request('/ai/importance-score',          { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiMemoryConsolidate       = (body, options = {}) => request('/ai/memory-consolidate',        { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRagChat                 = (body, options = {}) => request('/ai/rag-chat',                  { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiPiiRedact               = (body, options = {}) => request('/ai/pii-redact',                { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiMemoryGraphExtract      = (body, options = {}) => request('/ai/memory-graph-extract',      { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiDecayPolicyRecommend    = (body, options = {}) => request('/ai/decay-policy-recommend',    { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiSemanticSearch          = (body, options = {}) => request('/ai/semantic-search',           { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiCrossAgentShareAdvisor  = (body, options = {}) => request('/ai/cross-agent-share-advisor', { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiRetentionDryRun         = (body, options = {}) => request('/ai/retention-dry-run',         { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiAutoMergeAdvisor        = (body, options = {}) => request('/ai/auto-merge-advisor',        { ...options, method: 'POST', body: JSON.stringify(body || {}) });
+export const aiEmbedGenerate           = (body, options = {}) => request('/ai/embed-generate',            { ...options, method: 'POST', body: JSON.stringify(body || {}) });
 export const memoryConflictResolve     = (body) => request('/memory-conflicts/resolve',     { method: 'POST', body: JSON.stringify(body || {}) });
 
 // ─── Pass 7 — non-AI ops (pass7 router) ──────────────────────────────────────

@@ -12,7 +12,7 @@ export default function AISummaryRollupPage() {
         { key: 'subject', label: 'Subject', type: 'text', placeholder: '' },
         { key: 'period', label: 'Period', type: 'text', placeholder: '' }
       ]}
-      run={(v) => aiSummaryRollup(v)}
+      run={(v, requestOptions) => aiSummaryRollup(v, requestOptions)}
     />
   );
 }

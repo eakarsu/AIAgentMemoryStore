@@ -13,7 +13,7 @@ export default function AIConflictResolvePage() {
         { key: 'a', label: 'Fact A', type: 'textarea' },
         { key: 'b', label: 'Fact B', type: 'textarea' },
       ]}
-      run={(v) => aiConflictResolve(v)}
+      run={(v, requestOptions) => aiConflictResolve(v, requestOptions)}
     />
   );
 }

@@ -11,7 +11,7 @@ export default function AIPiiRedactPage() {
       inputs={[
         { key: 'text', label: 'Text', type: 'textarea' },
       ]}
-      run={(v) => aiPiiRedact(v)}
+      run={(v, requestOptions) => aiPiiRedact(v, requestOptions)}
     />
   );
 }
