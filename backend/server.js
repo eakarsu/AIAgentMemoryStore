@@ -25,6 +25,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api', authenticateToken);
 app.use('/api/memory-workflow', require('./routes/nativeMemoryRecords')(require('./config/database')));
 app.use('/api/memory-workflow', require('./routes/tenantMemoryWorkflow'));
+app.use('/api/feature-pack', require('./routes/featurePack'));
 app.use('/api', (req, res, next) => {
   // Only the authenticated tenant workflow is supported here. Obsolete local
   // legacy flags never expose global memory rows or bypass tenant isolation.

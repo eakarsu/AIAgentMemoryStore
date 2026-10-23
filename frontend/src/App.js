@@ -21,6 +21,7 @@ import AIEmbeddingQualityPage from './pages/AIEmbeddingQualityPage';
 import SubjectBrowserWorkbench from './pages/SubjectBrowserWorkbench';
 import TimeSliderWorkbench from './pages/TimeSliderWorkbench';
 import CustomViewsPage from './pages/CustomViewsPage';
+import FeaturePackPage from './pages/FeaturePackPage';
 import { getToken,getMe,setToken,setStoredUser } from './services/api';
 import './App.css';
 
@@ -63,7 +64,7 @@ function Shell() {
       <main className="main" style={{ padding: 0 }}>
         <Topbar />
         <div style={{ padding: '24px 32px' }}>
-          <Routes><Route path="/" element={<Dashboard/>}/><Route path="/memories" element={<NativeMemoryWorkspace/>}/><Route path="/ai/memory-governance-review" element={<MemoryGovernanceReview/>}/><Route path="*" element={<section><h1>Archived prototype</h1><p>This historical global feature remains disabled because it is not tenant-isolated. Use Native tenant memories or Memory governance review in the sidebar.</p></section>}/></Routes>
+          <Routes><Route path="/" element={<Dashboard/>}/><Route path="/memories" element={<NativeMemoryWorkspace/>}/><Route path="/ai/memory-governance-review" element={<MemoryGovernanceReview/>}/><Route path="/feature-pack" element={<FeaturePackPage/>}/><Route path="*" element={<section><h1>Archived prototype</h1><p>This historical global feature remains disabled because it is not tenant-isolated. Use Native tenant memories or Memory governance review in the sidebar.</p></section>}/></Routes>
 
         </div>
       </main>

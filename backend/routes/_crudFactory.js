@@ -9,6 +9,7 @@ const pool = require('../config/database');
 const { requireWriter } = require('../middleware/auth');
 const { fireWebhook } = require('../services/webhooks');
 const upload = require('../services/uploadStore');
+const { toCsv, filterRecords } = require('../lib/featurePack');
 
 function parseCsv(text) {
   // Minimal RFC-4180 parser. Handles quoted fields, escaped quotes, CRLF.
@@ -40,7 +41,19 @@ function buildCrud({ table, fields, idPrefix = '', webhookPrefix = null }) {
   router.get('/', async (req, res) => {
     try {
       const r = await pool.query(`SELECT * FROM ${table} ORDER BY id DESC`);
-      res.json(r.rows);
+      res.json(filterRecords(r.rows, { q: req.query.q || req.query.search, status: req.query.status }));
+    } catch (e) { res.status(500).json({ error: e.message }); }
+  });
+
+  router.get('/export', async (req, res) => {
+    const format = String(req.query.format || 'json').toLowerCase();
+    if (!['csv', 'json'].includes(format)) return res.status(400).json({ error: 'format must be csv or json' });
+    try {
+      const r = await pool.query(`SELECT * FROM ${table} ORDER BY id DESC`);
+      const records = filterRecords(r.rows, { q: req.query.q || req.query.search, status: req.query.status });
+      if (format === 'csv') { res.setHeader('Content-Type', 'text/csv'); res.setHeader('Content-Disposition', `attachment; filename="${table}.csv"`); return res.send(toCsv(records)); }
+      res.setHeader('Content-Disposition', `attachment; filename="${table}.json"`);
+      return res.json({ records, count: records.length, exported_at: new Date().toISOString() });
     } catch (e) { res.status(500).json({ error: e.message }); }
   });
 
